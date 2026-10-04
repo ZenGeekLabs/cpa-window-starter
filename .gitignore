@@ -1,0 +1,17 @@
+.DS_Store
+.build/
+.cache/
+.demo/
+dist/
+release/
+work/
+plugins/
+__pycache__/
+*.dylib
+*.so
+*.dll
+*.pyc
+.env
+.env.*
+config.yaml
+config.yml

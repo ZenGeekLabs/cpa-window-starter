@@ -1,0 +1,21 @@
+plugins:
+  enabled: true
+  dir: plugins
+  configs:
+    cpa-window-starter:
+      enabled: true
+      priority: 1
+      schedule_enabled: true
+      timezone: Asia/Shanghai
+      # These defaults can be replaced with any daily HH:MM times.
+      times: ["07:00", "13:00", "19:00"]
+      # Select accounts from the plugin page; empty means no outbound requests.
+      accounts: []
+      model: gpt-6-sol
+      state_file: plugins/state/cpa-window-starter.json
+      # Independent Gemini / Antigravity plan (off until configured).
+      antigravity_schedule_enabled: false
+      antigravity_times: ["07:00", "13:00", "19:00"]
+      antigravity_timezone: Asia/Shanghai
+      antigravity_accounts: []
+      antigravity_model: ""

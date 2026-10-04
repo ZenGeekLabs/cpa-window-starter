@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- CPA_APPEARANCE -->
+<title>CPA Window Starter</title><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./timezone-picker.css">
+<script src="./cpa-session.js" defer></script><script src="./i18n.js" defer></script><script src="./timezone-picker.js" defer></script><script src="./app.js" defer></script>
+</head>
+<body><main>
+<header class="pageHeader">
+ <div class="headingBlock"><div class="titleRow"><span class="appIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.5V12l3.5 2" stroke-linecap="round"/></svg></span><h1 data-i18n="title">账号定时请求</h1><span class="version">0.2.6</span></div><p class="muted subtitle" data-i18n="subtitle"></p></div>
+</header>
+<section id="demoNotice" class="demoNotice" hidden><span class="demoDot" aria-hidden="true"></span><span data-i18n="demo"></span></section>
+<section id="connectionPanel" class="panel login"><div><h2 data-i18n="login"></h2><p id="connectionHint" class="muted"></p><p class="muted" data-i18n="loginHelp"></p></div><div class="inline"><a id="nativeSettings" class="buttonLink" href="/management.html#/plugins" target="_top" data-i18n="openSettings"></a><button id="connectButton" type="button" class="secondary" data-i18n="reconnect"></button></div></section>
+<div id="workspace" hidden>
+ <div class="providerBar"><nav class="providerTabs" aria-label="Provider"><button id="codexTab" type="button"><img class="providerMark openaiMark" src="./openai.png" width="22" height="22" alt="" aria-hidden="true">GPT / Codex</button><button id="antigravityTab" type="button" class="secondary"><img class="providerMark geminiMark" src="./gemini.svg" width="22" height="22" alt="" aria-hidden="true">Gemini / Antigravity</button></nav><div id="headerActions" class="actions" hidden><span id="dirtyHint" class="muted" role="status"></span><button id="runButton" type="button" class="secondary" data-i18n="run"></button><button id="saveButton" type="submit" form="settingsForm" data-i18n="save"></button></div></div>
+ <section class="summary" aria-label="Schedule overview"><article class="nextSummary"><p data-i18n="next"></p><strong id="nextTrigger">—</strong><span id="timezoneLabel"></span></article><article><p data-i18n="selected"></p><strong id="selectedCount">0</strong><span data-i18n="perAccount"></span></article><article><p data-i18n="state"></p><strong id="scheduleState">—</strong><span id="runningHint"></span></article></section>
+ <p id="quotaNotice" class="quotaNote" data-i18n="quotaUnknown" hidden></p>
+ <form id="settingsForm">
+  <div class="settingsGrid">
+   <section class="panel schedulePanel"><div class="sectionHeader"><div><p class="sectionStep" aria-hidden="true">01</p><h2 data-i18n="daily"></h2></div><label class="switch"><input id="scheduleEnabled" type="checkbox"><span class="switchTrack" aria-hidden="true"></span><span data-i18n="automatic"></span></label></div>
+    <div class="scheduleBody"><div id="timeList" class="timeList"></div><button id="addTime" type="button" class="secondary addTime" data-i18n="addTime"></button>
+    <div class="fields"><label><span class="fieldName" data-i18n="timezone"></span><div class="timezoneField"><input id="timezone" type="text" required autocomplete="off"><small id="zoneOffset" class="offset"></small></div><small data-i18n="zoneHelp"></small></label><label><span class="fieldName" data-i18n="model"></span><span class="selectControl"><select id="model" required></select><svg class="selectChevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4.5 6.5 3.5 3.5 3.5-3.5"/></svg></span><small data-i18n="modelHelp"></small><small id="modelHint" role="status"></small></label></div></div>
+   </section>
+   <section class="panel accountsPanel"><div class="sectionHeader"><div><p class="sectionStep" aria-hidden="true">02</p><h2 data-i18n="accounts"></h2></div><button id="refreshAccounts" type="button" class="secondary subtle" data-i18n="refreshAccounts"></button></div><p class="panelHelp muted" data-i18n="accountHelp"></p><p id="metadataHint" class="muted metadataHint"></p><div id="accountList" class="accountList"></div></section>
+  </div>
+ </form>
+ <section class="panel historyPanel"><div class="sectionHeader"><div><h2 data-i18n="history"></h2><p class="muted" data-i18n="quotaHelp"></p></div><button id="refreshStatus" type="button" class="secondary subtle" data-i18n="refresh"></button></div><div class="tableWrap"><table><thead><tr><th data-i18n="account"></th><th data-i18n="at"></th><th data-i18n="result"></th><th data-i18n="reset"></th></tr></thead><tbody id="history"></tbody></table></div><p class="footnote" data-i18n="footnote"></p></section>
+</div>
+<p id="feedback" role="status" aria-live="polite"></p><footer data-i18n="footer"></footer>
+</main></body></html>
