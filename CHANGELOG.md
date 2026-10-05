@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.7 — 2026-10-05
+
+- Add macOS Intel (`darwin_amd64`), Linux ARM64 (`linux_arm64`), and Windows x64 (`windows_amd64`) packages alongside the existing two targets.
+- Build and run the native ABI harness on all five matching GitHub runner platforms before packaging.
+- Verify all published platform packages by downloading, checking SHA-256 and binary architecture, and loading the actual library.
+- Refuse incomplete five-platform distributions and incorrect binary / archive formats.
+- Update bilingual installation and build documentation. Scheduling and UI behavior are unchanged.
+
 ## 0.2.6 — 2026-10-05
 
 First public release of CPA Window Starter.

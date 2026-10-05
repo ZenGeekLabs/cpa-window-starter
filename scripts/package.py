@@ -6,6 +6,8 @@ import pathlib
 import re
 import zipfile
 
+from release_platforms import PLATFORMS, library_name, validate_library
+
 root = pathlib.Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--output-dir', default=str(root / 'release'))
@@ -14,10 +16,13 @@ output = pathlib.Path(args.output_dir).resolve()
 output.mkdir(parents=True, exist_ok=True)
 version = re.search(r'const Version = "([^"]+)"', (root / 'internal/starter/config.go').read_text()).group(1)
 artifacts = []
-for target, extension in [('darwin_arm64', 'dylib'), ('linux_amd64', 'so')]:
-    library = root / 'dist' / target / f'cpa-window-starter.{extension}'
+# Validate all five targets before writing any package or checksum file.
+libraries = {target: root / 'dist' / target / library_name(target) for target in PLATFORMS}
+for target, library in libraries.items():
     if not library.is_file():
         raise SystemExit(f'Missing native build: {library}')
+    validate_library(library.read_bytes(), target)
+for target, library in libraries.items():
     archive = output / f'cpa-window-starter_{version}_{target}.zip'
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:
         bundle.write(library, library.name)

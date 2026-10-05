@@ -47,12 +47,15 @@ Download the matching ZIP and `checksums.txt` from the [latest release](https://
 
 | CPA server platform | Archive suffix | Library inside |
 | --- | --- | --- |
+| macOS, Intel | `darwin_amd64.zip` | `cpa-window-starter.dylib` |
 | macOS, Apple Silicon | `darwin_arm64.zip` | `cpa-window-starter.dylib` |
 | Linux, x86_64 with glibc | `linux_amd64.zip` | `cpa-window-starter.so` |
+| Linux, ARM64 with glibc | `linux_arm64.zip` | `cpa-window-starter.so` |
+| Windows, x86_64 | `windows_amd64.zip` | `cpa-window-starter.dll` |
 
-Select the platform of the **machine running CPA**, regardless of the browser's operating system. Windows, Intel Mac, Linux ARM64, and musl / Alpine builds are not supplied in this release.
+Select the platform of the **machine running CPA**, regardless of the browser's operating system. All five store-required targets are supplied. Linux packages target glibc 2.17 or later; musl / Alpine is not supported. macOS packages target macOS 13 or later; the ABI tests run on macOS 15. Windows verification runs on Windows Server 2022.
 
-1. Compare the archive's SHA-256 with its entry in `checksums.txt` (`shasum -a 256 <archive>` on macOS, `sha256sum <archive>` on Linux).
+1. Compare the archive's SHA-256 with its entry in `checksums.txt` (`shasum -a 256 <archive>` on macOS, `sha256sum <archive>` on Linux, or PowerShell `Get-FileHash <archive> -Algorithm SHA256` on Windows).
 2. Extract the library into CPA's configured plugin directory. Back up an existing library before replacing it.
 3. Enable plugins and this plugin in CPA. A configuration example is available in [config.example.yaml](config.example.yaml).
 4. Load or reload the plugin from CPA's plugin management page, then open its menu entry. If your host requires a restart, schedule it when no requests are in progress.
@@ -97,7 +100,7 @@ make build
 python3 tests/abi_smoke.py dist/darwin_arm64/cpa-window-starter.dylib --work-dir .build/abi
 ```
 
-Use the `.so` path for the ABI check on Linux. Native Linux builds use `sh scripts/build.sh linux amd64`; Linux cross-compilation from macOS uses `ZIG=/path/to/zig sh scripts/build.sh linux amd64` (GNU / glibc target).
+Use the `.so` path on Linux or `.dll` path on Windows for the ABI check. Windows builds use `sh scripts/build.sh windows amd64` in Git Bash with MinGW-w64 GCC; Intel Mac builds use `sh scripts/build.sh darwin amd64`. Native Linux builds use `sh scripts/build.sh linux amd64`; Linux cross-compilation from macOS uses `ZIG=/path/to/zig sh scripts/build.sh linux amd64` (GNU / glibc target).
 
 ```sh
 make demo
@@ -105,7 +108,9 @@ make demo
 
 Open <http://127.0.0.1:18418/v0/resource/plugins/cpa-window-starter/status?demo=1>. The local demo uses fictional accounts, models, and responses and sends no real provider requests. Its displayed reset times are simulated.
 
-After building both supported platforms, run `python3 scripts/package.py`. Release archives and `checksums.txt` are written to `release/`. See [release verification](docs/release-verification.md) and the [changelog](CHANGELOG.md).
+The CI workflow builds and loads each target on its matching OS and architecture, then packages only after all five succeed. A separate workflow downloads each published package and repeats its checksum, architecture, and native ABI checks.
+
+After building all five supported platforms, run `python3 scripts/package.py`. Release archives and `checksums.txt` are written to `release/`. See [release verification](docs/release-verification.md) and the [changelog](CHANGELOG.md).
 
 ## License and attribution
 

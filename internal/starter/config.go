@@ -12,7 +12,7 @@ import (
 )
 
 const PluginID = "cpa-window-starter"
-const Version = "0.2.6"
+const Version = "0.2.7"
 
 type Config struct {
 	AGScheduleEnabled bool     `json:"antigravity_schedule_enabled" yaml:"antigravity_schedule_enabled"`

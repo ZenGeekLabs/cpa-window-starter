@@ -1,4 +1,4 @@
-name: Verify published Linux package
+name: Verify published packages on all platforms
 on:
   release:
     types: [published]
@@ -7,12 +7,46 @@ on:
       tag:
         description: Release tag to verify
         required: true
-        default: v0.2.6
+        default: v0.2.7
 permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-24.04
+    name: Download and load (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: darwin_amd64
+            os: darwin
+            arch: amd64
+            extension: dylib
+            runner: macos-15-intel
+          - target: darwin_arm64
+            os: darwin
+            arch: arm64
+            extension: dylib
+            runner: macos-15
+          - target: linux_amd64
+            os: linux
+            arch: amd64
+            extension: so
+            runner: ubuntu-24.04
+          - target: linux_arm64
+            os: linux
+            arch: arm64
+            extension: so
+            runner: ubuntu-24.04-arm
+          - target: windows_amd64
+            os: windows
+            arch: amd64
+            extension: dll
+            runner: windows-2022
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
       GH_TOKEN: ${{ github.token }}
@@ -20,22 +54,13 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag }}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
       - name: Download and verify the published archive
         run: |
           mkdir -p .build/release
-          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir .build/release --pattern '*_linux_amd64.zip' --pattern checksums.txt
-          python3 - <<'PYTHON'
-          import hashlib, os, pathlib, re, zipfile
-          tag = os.environ['RELEASE_TAG']
-          assert re.fullmatch(r'v[0-9]+(?:\.[0-9]+)+', tag), 'Invalid release tag'
-          root = pathlib.Path('.build/release')
-          name = f'cpa-window-starter_{tag[1:]}_linux_amd64.zip'
-          entries = {line.split()[1]: line.split()[0] for line in (root/'checksums.txt').read_text().splitlines()}
-          assert hashlib.sha256((root/name).read_bytes()).hexdigest() == entries[name], 'Checksum mismatch'
-          with zipfile.ZipFile(root/name) as bundle:
-              assert bundle.namelist() == ['cpa-window-starter.so'], 'Unexpected archive layout'
-              bundle.extractall(root)
-          print('Published Linux ZIP structure and SHA-256 verified')
-          PYTHON
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir .build/release --pattern '*_${{ matrix.target }}.zip' --pattern checksums.txt
+          python scripts/verify_release.py --directory .build/release --tag "$RELEASE_TAG" --target '${{ matrix.target }}' --extract-to .build/library
       - name: Exercise the actual release library with fake host callbacks
-        run: python3 tests/abi_smoke.py .build/release/cpa-window-starter.so --work-dir .build/abi
+        run: python tests/abi_smoke.py '.build/library/cpa-window-starter.${{ matrix.extension }}' --work-dir .build/abi

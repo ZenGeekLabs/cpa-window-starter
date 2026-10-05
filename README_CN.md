@@ -47,12 +47,15 @@ plugins:
 
 | CPA 所在机器 | 安装包后缀 | 包内文件 |
 | --- | --- | --- |
+| macOS，Intel | `darwin_amd64.zip` | `cpa-window-starter.dylib` |
 | macOS，Apple Silicon | `darwin_arm64.zip` | `cpa-window-starter.dylib` |
 | Linux，x86_64 / glibc | `linux_amd64.zip` | `cpa-window-starter.so` |
+| Linux，ARM64 / glibc | `linux_arm64.zip` | `cpa-window-starter.so` |
+| Windows，x86_64 | `windows_amd64.zip` | `cpa-window-starter.dll` |
 
-按 **运行 CPA 的机器** 选择，与浏览器所在设备无关。本版未提供 Windows、Intel Mac、Linux ARM64 或 musl / Alpine 构建。
+按 **运行 CPA 的机器** 选择，与浏览器所在设备无关。本版覆盖商店要求的全部五种目标。Linux 安装包面向 glibc 2.17 或更新版本，不支持 musl / Alpine；macOS 构建目标为 13 或更新版本，加载测试运行在 macOS 15；Windows 加载测试运行在 Windows Server 2022。
 
-1. 用 macOS 的 `shasum -a 256 <安装包>` 或 Linux 的 `sha256sum <安装包>`，核对 `checksums.txt` 中对应的 SHA-256。
+1. 用 macOS 的 `shasum -a 256 <安装包>` 、Linux 的 `sha256sum <安装包>` 或 Windows PowerShell 的 `Get-FileHash <安装包> -Algorithm SHA256`，核对 `checksums.txt` 中对应的 SHA-256。
 2. 解压动态库到 CPA 配置的插件目录。更新已有插件时，先备份原文件。
 3. 在 CPA 中启用插件功能和本插件；完整配置示例见 [config.example.yaml](config.example.yaml)。
 4. 在插件管理页加载或重新加载插件，再打开其菜单入口。如果你的 CPA 版本需要重启，请安排在没有请求运行时操作。
@@ -97,7 +100,7 @@ make build
 python3 tests/abi_smoke.py dist/darwin_arm64/cpa-window-starter.dylib --work-dir .build/abi
 ```
 
-在 Linux 上进行 ABI 检查时换成 `.so` 路径。原生 Linux 构建使用 `sh scripts/build.sh linux amd64`；从 macOS 交叉编译可使用 `ZIG=/path/to/zig sh scripts/build.sh linux amd64`，目标为 GNU / glibc。
+ABI 检查在 Linux 上使用 `.so` 路径，在 Windows 上使用 `.dll` 路径。Windows 使用 MinGW-w64 GCC，在 Git Bash 中运行 `sh scripts/build.sh windows amd64`；Intel Mac 使用 `sh scripts/build.sh darwin amd64`。原生 Linux 构建使用 `sh scripts/build.sh linux amd64`；从 macOS 交叉编译可使用 `ZIG=/path/to/zig sh scripts/build.sh linux amd64`，目标为 GNU / glibc。
 
 ```sh
 make demo
@@ -105,7 +108,9 @@ make demo
 
 打开 <http://127.0.0.1:18418/v0/resource/plugins/cpa-window-starter/status?demo=1>。演示使用虚拟账号、模型和响应，不调用真实上游，也不消耗账号额度；其中的重置时间为模拟数据。
 
-构建两个平台后，运行 `python3 scripts/package.py`，在 `release/` 获得安装包和 `checksums.txt`。验证范围见 [发布验证说明](docs/release-verification.md)，版本变化见 [CHANGELOG](CHANGELOG.md)。
+CI 会在对应操作系统和架构上分别构建、实际加载五种动态库，全部通过后再打包。发布后另有工作流下载正式安装包，重新核对校验和、架构并执行原生 ABI 测试。
+
+构建五个平台后，运行 `python3 scripts/package.py`，在 `release/` 获得安装包和 `checksums.txt`。验证范围见 [发布验证说明](docs/release-verification.md)，版本变化见 [CHANGELOG](CHANGELOG.md)。
 
 ## 开源许可与图标说明
 
