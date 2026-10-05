@@ -49,7 +49,7 @@ def host_call(ctx, method, request, length, response):
             body = json.loads(base64.b64decode(payload['body']))
             assert ('reasoning_effort' not in body) if payload['auth_id']=='account-g' else body['reasoning_effort']=='low'
             assert len(body['messages']) == 1
-            saved = json.loads(pathlib.Path(str(state)+'.antigravity').read_text() if payload['auth_id']=='account-g' else state.read_text())
+            saved = json.loads(pathlib.Path(str(state)+'.antigravity').read_text(encoding='utf-8') if payload['auth_id']=='account-g' else state.read_text(encoding='utf-8'))
             assert any(row['auth_id'] == payload['auth_id'] and row['status'] == 'running' for row in saved['results'])
             with lock:
                 executions.append({'auth_id': payload['auth_id'], 'at': time.time()})
@@ -135,7 +135,7 @@ try:
     code, _ = management('POST', '/v0/management/plugins/cpa-window-starter/run', {})
     assert code == 202
     current = wait_idle()
-    assert [row['auth_id'] for row in executions] == ['account-a', 'account-b']
+    assert [row['auth_id'] for row in executions] == ['account-a', 'account-b'], json.dumps({'executions': executions, 'callback_errors': callback_errors, 'status': current}, ensure_ascii=True)
     assert [row['status'] for row in current['results']] == ['success', 'success', 'skipped']
     assert all(row.get('reset_at') for row in current['results'][:2])
     print('Native ABI: registration, static resource, exact account pinning, manual request, reset headers and disabled-account skip passed.', flush=True)
@@ -185,7 +185,7 @@ try:
     print('Native ABI: Antigravity request pinned independently; Codex quota headers not reused.', flush=True)
     assert not callback_errors, callback_errors
     report = {'platform': platform.system().lower()+'/'+platform.machine(), 'antigravity_pinning':'passed', 'native_abi': 'passed', 'host_error_http_status': 'passed', 'scheduled_timer': 'passed' if args.schedule else 'not_run', 'mock_model_calls': len(executions), 'real_accounts_used': False}
-    (work / 'report.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
+    (work / 'report.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
 finally:
     call('plugin.quiesce', {})
     plugin.shutdown()
