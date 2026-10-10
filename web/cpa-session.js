@@ -1,7 +1,8 @@
 /* CPA saved-login compatibility: official WebUI secureStorage/encryption format. */
 'use strict';
 (() => {
- const prefix = 'enc::v1::';
+ const prefixV1 = 'enc::v1::';
+ const prefixV2 = 'enc::v2::';
  const salt = 'cli-proxy-api-webui::secure-storage';
  function resourcePrefix(win) {
   const marker = '/v0/resource/plugins/cpa-window-starter/';
@@ -12,12 +13,18 @@
   try {
    let raw = win.localStorage.getItem(name);
    if (typeof raw !== 'string' || raw.length > 65536) return null;
-   if (raw.startsWith('enc::') && !raw.startsWith(prefix)) return null;
-   if (raw.startsWith(prefix)) {
+   const v1 = raw.startsWith(prefixV1);
+   const v2 = raw.startsWith(prefixV2);
+   if (raw.startsWith('enc::') && !v1 && !v2) return null;
+   if (v1 || v2) {
+    const prefix = v2 ? prefixV2 : prefixV1;
     const bytes = Uint8Array.from(atob(raw.slice(prefix.length)), ch => ch.charCodeAt(0));
-    const key = new TextEncoder().encode(`${salt}|${win.location.host}|${win.navigator.userAgent}`);
+    const keyMaterial = v2
+     ? `${salt}|v2|${win.location.host}`
+     : `${salt}|${win.location.host}|${win.navigator.userAgent}`;
+    const key = new TextEncoder().encode(keyMaterial);
     for (let i = 0; i < bytes.length; i++) bytes[i] ^= key[i % key.length];
-    raw = new TextDecoder().decode(bytes);
+    raw = new TextDecoder('utf-8', {fatal: true}).decode(bytes);
    }
    try { return JSON.parse(raw); } catch { return name === 'cli-proxy-auth' ? null : raw; }
   } catch { return null; }
